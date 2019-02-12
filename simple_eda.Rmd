@@ -1,0 +1,131 @@
+---
+title: "Exploratory Data Analysis of Human Activity Recognition Data Set"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+## Introduction
+
+
+
+
+## Data and library load
+
+```{r message=FALSE}
+setwd("/Users/padhokshaja/Documents/R/human_activity/simplifiedhuarus/")
+
+libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang')
+lapply(libraries_needed ,require,character.only=TRUE)
+data_raw<- read.csv('train.csv')
+
+
+```
+### Top Level Information
+
+#### Number of columns and rows
+
+```{r}
+dim(data_raw)
+
+```
+The data has 563 features and 3609 observations.
+
+
+
+
+#### Activities that are present
+```{r}
+
+data_raw %>%
+  group_by(activity) %>%
+  summarise(Frequency=n())
+
+```
+
+* There are 6 activities in total. 
+* The frequencies of occurrences are not skewed much to a single activity.
+
+
+## Looking at the variables
+ 
+ The data set consists of 563 variables. Each of these variables signify important metrics associated with human activity. But due to the sheer amount of features, we need to come up with a different way of looking at the variables.
+ 
+
+###  How does each variable impact the dependent variable that describes the activities?
+
+
+*One Way ANOVA Test*
+
+
+
+
+
+```{r}
+
+list_of_variables <- data_raw %>% select(-rn,-activity) %>% names()
+for(variable_names in list_of_variables){
+  
+  mean_grand <- data_raw %>% 
+    select_(variable_names) %>% 
+    mutate_all(funs(mean(.,na.rm=T))) %>% 
+    unique() %>% 
+    pull()
+  mean_groups <- data_raw %>% 
+    select_(variable_names ,'activity') %>% 
+    group_by(activity) %>%
+    summarise_all(funs(mean(.,na.rm=T))) %>% 
+    inner_join(data_raw %>% select_(variable_names ,'activity') %>% group_by(activity) %>%
+    summarise(n=n())) %>% ungroup() %>% as.data.frame()
+  mean_groups$num_var <- mean_groups[,variable_names]
+  mean_groups <- mean_groups %>% 
+    select(activity,num_var,n)
+  
+  mean_sum_of_squares_between <- mean_groups %>%
+    mutate(between_components = n * ((num_var - mean_grand) ^ 2)) %>% mutate(mean_squared_between =
+    sum(between_components) / (length(unique(
+    mean_groups$activity
+    )) - 1)) %>%
+    select(mean_squared_between) %>% unique() %>% pull()
+  
+  ### Within group variablility
+  
+  
+  mean_sum_of_squares_within <- data_raw %>% 
+    select_(variable_names ,'activity') %>%
+    inner_join(mean_groups) %>%
+    mutate(within_components= (num_var-UQ(rlang::sym(variable_names)))^2) %>%
+    mutate(mean_sum_of_squares= sum(within_components)/(nrow(data_raw)-length(unique(mean_groups$activity)))) %>%
+    select(mean_sum_of_squares) %>% unique() %>% pull()
+  
+    
+    f_stat <- mean_sum_of_squares_between/mean_sum_of_squares_within
+    p_value <- pf(f_stat,(length(unique(
+    mean_groups$activity
+    )) - 1),(nrow(data_raw)-length(unique(mean_groups$activity))),lower.tail = F)
+    if(p_value<0.05){
+      print(f_stat)
+      print(p_value)
+    }
+  
+  
+  
+
+
+}
+
+
+
+
+
+  
+
+```
+
+
+
+
+
