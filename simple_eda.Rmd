@@ -16,9 +16,7 @@ output:
 ## Data and library load
 
 ```{r message=FALSE}
-setwd("/Users/padhokshaja/Documents/R/human_activity/simplifiedhuarus/")
-
-libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang')
+libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes')
 lapply(libraries_needed ,require,character.only=TRUE)
 data_raw<- read.csv('train.csv')
 
@@ -64,9 +62,10 @@ data_raw %>%
 
 
 
-```{r}
+```{r message=FALSE}
 
 list_of_variables <- data_raw %>% select(-rn,-activity) %>% names()
+p_values_variables <- data.frame(variable_names=as.character(),p_values=as.numeric())
 for(variable_names in list_of_variables){
   
   mean_grand <- data_raw %>% 
@@ -106,17 +105,19 @@ for(variable_names in list_of_variables){
     p_value <- pf(f_stat,(length(unique(
     mean_groups$activity
     )) - 1),(nrow(data_raw)-length(unique(mean_groups$activity))),lower.tail = F)
+    
     if(p_value<0.05){
-      print(f_stat)
-      print(p_value)
+      
+      p_value_df <- data.frame(variable_names=variable_names,p_values = p_value)
+      p_values_variables <- rbind(p_value_df,p_values_variables)
+      
     }
-  
-  
-  
-
-
+    
+    
 }
 
+
+print(dim(p_values_variables))
 
 
 
@@ -126,6 +127,37 @@ for(variable_names in list_of_variables){
 ```
 
 
+```{r}
+
+options(scipen = 999)
+p_values_variables %>% 
+  ggplot(aes(x=p_values))+
+  geom_histogram()+
+  theme(panel.background=element_blank(),
+        panel.grid = element_line(color='#d5d5d4'),
+        axis.ticks = element_blank())+
+  labs(x='P Values',y='Frequency')+
+  geom_rect(aes(xmin=-0.001,xmax=0.001,ymin=0,ymax=600),fill='grey',alpha=0.0125,size=0.01,color='black')
+
+  
+  
 
 
+```
+
+
+### How do these variables interact with each other?
+
+
+```{r}
+
+
+
+variable_names_to_select <- as.character(dput(p_values_variables$variable_names))
+data_raw %>%
+  select(.dots=as.character(p_values_variables$variable_names)) %>% names()
+  
+
+
+```
 
