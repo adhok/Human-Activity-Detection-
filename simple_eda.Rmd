@@ -16,7 +16,7 @@ output:
 ## Data and library load
 
 ```{r message=FALSE}
-libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes')
+libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally')
 lapply(libraries_needed ,require,character.only=TRUE)
 data_raw<- read.csv('train.csv')
 
@@ -174,11 +174,31 @@ for(col in names(correlation_df)[!grepl('row_names',names(correlation_df))]){
     
   
 }
-number_of_variables %>%
-  ggplot(aes(x=number_of_variables))+
-  geom_histogram()
+variables_needed_for_modeling <- number_of_variables %>%
+  filter(number_of_variables==0) %>% select(variable_name) %>% pull()
+
+print(variables_needed_for_modeling)
 
 
+
+```
+
+
+### Looking at the relationship amongst these 28 variables
+
+
+```{r echo=T,results='hide'}
+
+library(nnet)
+modeling_data <- data_raw %>%
+  select_(.dots=dput(as.character(variables_needed_for_modeling)),'activity')
+
+modeling_data$activity <- relevel(modeling_data$activity,ref='SITTING')
+
+
+  
+  
+  
 
 
 ```
