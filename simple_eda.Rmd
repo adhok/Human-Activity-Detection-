@@ -195,6 +195,14 @@ modeling_data <- data_raw %>%
 
 modeling_data$activity <- relevel(modeling_data$activity,ref='SITTING')
 
+model_logistic <- multinom(activity~.,data=modeling_data)
+broom::tidy(model_logistic)
+
+
+test <- predict(model_logistic,data=modeling_data %>% select(-activity))
+
+sum(as.character(test)==modeling_data$activity)
+
 
   
   
