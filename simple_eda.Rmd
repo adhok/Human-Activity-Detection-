@@ -37,12 +37,6 @@ Multinomial logistic regression is a classification method that generalizes the 
 
 One of the class outcomes is chosen as the pivot and the rest of the classes are modeled against this pivot class.In this example we will take the class 'SITTING' as the base class.
 
-### 
-
-
-
-
-
 
 ## Data and library load
 
@@ -85,6 +79,13 @@ data_raw %>%
  
 
 ###  How does each variable impact the dependent variable that describes the activities?
+
+
+Given that we have 561 features in the dataset, we need to reduce the number of features that we need so as to simplify the model that we are trying to build. One way to do that is to use the one way ANOVA(Analysis of Variance) Test. This is a technique used to identify if the difference in means between groups is significant or not by using the ratio of between group variability by within group variability. The null hypothesis of this test suggests that there is no significant difference between the means amongst the groups. And the alternate hypothesis suggests that at least one group's mean is significantly not similar to the other.
+
+
+To run this test, we use each feature as the numerical vector and we will test this against the classes(groups). The features for which we get a p-value of less than 0.05 will be used in the model.
+
 
 
 *One Way ANOVA Test*
