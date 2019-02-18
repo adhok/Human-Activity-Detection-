@@ -16,7 +16,7 @@ output:
 ## Data and library load
 
 ```{r message=FALSE}
-libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally')
+libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally','caret')
 lapply(libraries_needed ,require,character.only=TRUE)
 data_raw<- read.csv('train.csv')
 
@@ -184,7 +184,7 @@ print(variables_needed_for_modeling)
 ```
 
 
-### Looking at the relationship amongst these 28 variables
+### Building a mulit class logistic regression
 
 
 ```{r echo=T,results='hide'}
@@ -204,6 +204,8 @@ test <- predict(model_logistic,data=modeling_data %>% select(-activity))
 sum(as.character(test)==modeling_data$activity)
 
 
+
+
   
   
   
@@ -211,3 +213,32 @@ sum(as.character(test)==modeling_data$activity)
 
 ```
 
+
+
+### Cross Validation
+
+
+```{r}
+
+train_control <- trainControl(method='repeatedcv',number=10,repeats = 10)
+
+model_cv <- train(activity~.,data=modeling_data,trControl=train_control,
+                  method='multinom')
+
+coeff_data <- broom::tidy(summary(model_cv)$coefficients)
+
+coeff_data %>%
+  gather(variable,increase_in_log_odds,3:ncol(coeff_data)) %>%
+  select(.rownames,variable,increase_in_log_odds) %>%
+  rename(activity=.rownames) %>%
+  group_by(activity) %>%
+  ggplot(aes(x=variable,y=increase_in_log_odds,fill=activity))+
+  geom_bar(stat='identity',position='dodge')+
+  coord_flip()
+  
+
+
+
+
+
+```
