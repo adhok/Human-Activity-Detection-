@@ -10,6 +10,37 @@ output:
 
 ## Introduction
 
+The Human Activity recognition dataset consists of information collected from embedded accelerometer and gyroscopes while performing tasks like WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING and LAYING.The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years, with video evidence so as to label the observations correctly. The measure ments result in a 561 feature vector.
+
+
+
+## Aim of this project
+
+The aim of this project to effectively predict the activities given the measurement using multi nomial logistic regression as the predicting algorithm.
+
+
+
+
+## Multinomial Logistic Regression
+
+Multinomial logistic regression is a classification method that generalizes the logistic regression method to predicted more than two classes given the independent variables. This method is useful in cases where the dependent variable( the classes that we are trying to predict) are nominal in nature. This means that there is no rank associated with the classes. Examples of such include; What would a student choose as an elective given his/her preferences?
+
+
+### Assumptions of Multi Nomial Logistic Regression
+
+
+* Collinearity amongst the independent variables are assumed to be low
+* Independence of Irrelevant Alternatives: The odds of prefering one class over the other do not depend on the presence or absence of other 'irrelevant' alternatives. For example, the relative probabilities of taking History against Geography is not affected by the introduction of Political Science.
+
+
+### Process
+
+One of the class outcomes is chosen as the pivot and the rest of the classes are modeled against this pivot class.In this example we will take the class 'SITTING' as the base class.
+
+### 
+
+
+
 
 
 
