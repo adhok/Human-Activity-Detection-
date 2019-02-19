@@ -40,7 +40,7 @@ One of the class outcomes is chosen as the pivot and the rest of the classes are
 
 ## Data and library load
 
-```{r message=FALSE,results='hide'}
+```{r message=FALSE,results='hide',warning=FALSE}
 libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally','caret')
 lapply(libraries_needed ,require,character.only=TRUE)
 data_raw<- read.csv('train.csv')
@@ -80,19 +80,11 @@ data_raw %>%
 
 ###  How does each variable impact the dependent variable that describes the activities?
 
+*One Way ANOVA Test*
 
 Given that we have 561 features in the dataset, we need to reduce the number of features that we need so as to simplify the model that we are trying to build. One way to do that is to use the one way ANOVA(Analysis of Variance) Test. This is a technique used to identify if the difference in means between groups is significant or not by using the ratio of between group variability by within group variability. The null hypothesis of this test suggests that there is no significant difference between the means amongst the groups. And the alternate hypothesis suggests that at least one group's mean is significantly not similar to the other.
 
-
 To run this test, we use each feature as the numerical vector and we will test this against the classes(groups). The features for which we get a p-value of less than 0.05 will be used in the model.
-
-
-
-*One Way ANOVA Test*
-
-
-
-
 
 ```{r message=FALSE}
 
@@ -100,11 +92,17 @@ list_of_variables <- data_raw %>% select(-rn,-activity) %>% names()
 p_values_variables <- data.frame(variable_names=as.character(),p_values=as.numeric())
 for(variable_names in list_of_variables){
   
+  
+  
+  ### Grand Mean
   mean_grand <- data_raw %>% 
     select_(variable_names) %>% 
     mutate_all(funs(mean(.,na.rm=T))) %>% 
     unique() %>% 
     pull()
+  
+  
+  ### Data frame with Number of Observations within each class and mean of observations per class
   mean_groups <- data_raw %>% 
     select_(variable_names ,'activity') %>% 
     group_by(activity) %>%
