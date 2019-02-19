@@ -40,7 +40,7 @@ One of the class outcomes is chosen as the pivot and the rest of the classes are
 
 ## Data and library load
 
-```{r message=FALSE}
+```{r message=FALSE,results='hide'}
 libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally','caret')
 lapply(libraries_needed ,require,character.only=TRUE)
 data_raw<- read.csv('train.csv')
