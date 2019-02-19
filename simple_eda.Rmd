@@ -16,14 +16,14 @@ The Human Activity recognition dataset consists of information collected from em
 
 ## Aim of this project
 
-The aim of this project to effectively predict the activities given the measurement using multi nomial logistic regression as the predicting algorithm.
+The aim of this project to effectively predict the activities using the gievn measurements via multinomial logistic regression as the predicting algorithm.
 
 
 
 
 ## Multinomial Logistic Regression
 
-Multinomial logistic regression is a classification method that generalizes the logistic regression method to predicted more than two classes given the independent variables. This method is useful in cases where the dependent variable( the classes that we are trying to predict) are nominal in nature. This means that there is no rank associated with the classes. Examples of such include; What would a student choose as an elective given his/her preferences?
+Multinomial logistic regression is a classification algorithm that generalizes the logistic regression method to predict more than two classes given the independent variables. This method is useful in cases where the dependent variable( the classes that we are trying to predict) are nominal in nature. This means that there is no rank associated with the classes. Examples of such include; What would a student choose as an elective given his/her preferences?
 
 
 ### Assumptions of Multi Nomial Logistic Regression
@@ -61,6 +61,8 @@ The data has 563 features and 3609 observations.
 
 
 #### Activities that are present
+
+
 ```{r}
 
 data_raw %>%
@@ -75,28 +77,14 @@ data_raw %>%
 
 ## Looking at the variables
  
- The data set consists of 563 variables. Each of these variables signify important metrics associated with human activity. But due to the sheer amount of features, we need to come up with a different way of looking at the variables.
- 
- 
- 
- 
- 
 
 ###  How does each variable impact the dependent variable that describes the activities?
 
 *One Way ANOVA Test*
 
-Given that we have 561 features in the dataset, we need to reduce the number of features that we need so as to simplify the model that we are trying to build. One way to do that is to use the one way ANOVA(Analysis of Variance) Test. This is a technique used to identify if the difference in means between groups is significant or not by using the ratio of between group variability by within group variability. The null hypothesis of this test suggests that there is no significant difference between the means amongst the groups. And the alternate hypothesis suggests that at least one group's mean is significantly not similar to the other.
+Given that we have 561 features in the dataset, we need to reduce the number of features that we need so as to simplify the model. One way to do that is to use the one way ANOVA(Analysis of Variance) Test. This is a technique used to identify if the difference in means between groups is significant or not by looking at the ratio of between group and within group variability. The null hypothesis of this test suggests that there is no significant difference between the means amongst the groups. And the alternate hypothesis suggests that at least one group's mean is significantly not similar to the other.
 
 To run this test, we use each feature as the numerical vector and we will test this against the classes(groups). The features for which we get a p-value of less than 0.05 will be used in the model.
-
-
-The assumptions of one way ANOVA test is as follows
-
-* The observations should be independent of each other
-* The observations need to be normally distributed
-* Population variance is assumed to be the same across groups
-
 
 
 
@@ -174,24 +162,12 @@ print(dim(p_values_variables))
 ```
 
 
-```{r}
-
-options(scipen = 999)
-p_values_variables %>% 
-  ggplot(aes(x=p_values))+
-  geom_histogram()+
-  theme(panel.background=element_blank(),
-        panel.grid = element_line(color='#d5d5d4'),
-        axis.ticks = element_blank())+
-  labs(x='P Values',y='Frequency')
-  
-  
-
-
-```
-
+Out of 561 features, 555 features had a significant impact on the class variables.
 
 ### How do these variables interact with each other?
+
+Before we feed the features into the logistic model, we need to make sure that the features are not collinear to each other. We will choose the variables that are not highly correlated with any other variables.
+
 
 
 ```{r}
@@ -231,15 +207,39 @@ print(variables_needed_for_modeling)
 ```
 
 
+
+### Visualizing the correlation matrix
+
+
+*We use a correlational plot to confirm low correlation amongst variables*
+
+```{r}
+
+modeling_data <- data_raw %>%
+  select_(.dots=dput(as.character(variables_needed_for_modeling)),'activity')
+
+
+modeling_data %>%
+  select(-activity) %>%
+  cor() %>%
+  corrplot::corrplot(method = 'circle',tl.pos='n')
+  
+
+
+
+```
+
+
+
+
 ### Building a mulit class logistic regression
+
+We will then feed the variables into the multi nomial logistic regression function to predict the activities.
 
 
 ```{r echo=T,results='hide'}
 
 library(nnet)
-modeling_data <- data_raw %>%
-  select_(.dots=dput(as.character(variables_needed_for_modeling)),'activity')
-
 modeling_data$activity <- relevel(modeling_data$activity,ref='SITTING')
 
 model_logistic <- multinom(activity~.,data=modeling_data)
