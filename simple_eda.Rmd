@@ -77,6 +77,10 @@ data_raw %>%
  
  The data set consists of 563 variables. Each of these variables signify important metrics associated with human activity. But due to the sheer amount of features, we need to come up with a different way of looking at the variables.
  
+ 
+ 
+ 
+ 
 
 ###  How does each variable impact the dependent variable that describes the activities?
 
@@ -85,6 +89,16 @@ data_raw %>%
 Given that we have 561 features in the dataset, we need to reduce the number of features that we need so as to simplify the model that we are trying to build. One way to do that is to use the one way ANOVA(Analysis of Variance) Test. This is a technique used to identify if the difference in means between groups is significant or not by using the ratio of between group variability by within group variability. The null hypothesis of this test suggests that there is no significant difference between the means amongst the groups. And the alternate hypothesis suggests that at least one group's mean is significantly not similar to the other.
 
 To run this test, we use each feature as the numerical vector and we will test this against the classes(groups). The features for which we get a p-value of less than 0.05 will be used in the model.
+
+
+The assumptions of one way ANOVA test is as follows
+
+* The observations should be independent of each other
+* The observations need to be normally distributed
+* Population variance is assumed to be the same across groups
+
+
+
 
 ```{r message=FALSE}
 
@@ -109,10 +123,14 @@ for(variable_names in list_of_variables){
     summarise_all(funs(mean(.,na.rm=T))) %>% 
     inner_join(data_raw %>% select_(variable_names ,'activity') %>% group_by(activity) %>%
     summarise(n=n())) %>% ungroup() %>% as.data.frame()
+  
+  
+  ## Rename the variable_names column as num_var . This is the within group mean
   mean_groups$num_var <- mean_groups[,variable_names]
   mean_groups <- mean_groups %>% 
     select(activity,num_var,n)
   
+  ### Calculate The mean_sum_of_squares_between
   mean_sum_of_squares_between <- mean_groups %>%
     mutate(between_components = n * ((num_var - mean_grand) ^ 2)) %>% mutate(mean_squared_between =
     sum(between_components) / (length(unique(
@@ -120,9 +138,7 @@ for(variable_names in list_of_variables){
     )) - 1)) %>%
     select(mean_squared_between) %>% unique() %>% pull()
   
-  ### Within group variablility
-  
-  
+  ### Within group variablility calculation
   mean_sum_of_squares_within <- data_raw %>% 
     select_(variable_names ,'activity') %>%
     inner_join(mean_groups) %>%
@@ -130,8 +146,9 @@ for(variable_names in list_of_variables){
     mutate(mean_sum_of_squares= sum(within_components)/(nrow(data_raw)-length(unique(mean_groups$activity)))) %>%
     select(mean_sum_of_squares) %>% unique() %>% pull()
   
-    
+    #### F Statistic which between variability/within variability
     f_stat <- mean_sum_of_squares_between/mean_sum_of_squares_within
+    ## p - value using this F statistic
     p_value <- pf(f_stat,(length(unique(
     mean_groups$activity
     )) - 1),(nrow(data_raw)-length(unique(mean_groups$activity))),lower.tail = F)
@@ -248,7 +265,7 @@ sum(as.character(test)==modeling_data$activity)
 ### Cross Validation
 
 
-```{r}
+```{r fig.height = 15}
 
 train_control <- trainControl(method='repeatedcv',number=10,repeats = 10)
 
