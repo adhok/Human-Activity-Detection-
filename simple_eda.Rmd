@@ -166,9 +166,7 @@ Out of 561 features, 555 features had a significant impact on the class variable
 
 ### How do these variables interact with each other?
 
-Before we feed the features into the logistic model, we need to make sure that the features are not collinear to each other. We will choose the variables that are not highly correlated with any other variables.
-
-
+Before we feed the features into the logistic model, we need to make sure that the features are not collinear to each other. We will look at the number of variables each feature is correlated to. 
 
 ```{r}
 
@@ -208,6 +206,9 @@ print(variables_needed_for_modeling)
 
 
 
+Out of 555 variables, 28 variables are not correlated to any other variable in the data set.
+
+
 ### Visualizing the correlation matrix
 
 
@@ -232,7 +233,7 @@ modeling_data %>%
 
 
 
-### Building a mulit class logistic regression
+### Building a multi class logistic regression
 
 We will then feed the variables into the multi nomial logistic regression function to predict the activities.
 
