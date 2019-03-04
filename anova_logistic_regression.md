@@ -8,9 +8,11 @@ output:
       smooth_scroll: false
 ---
 
+Cover Photo by Fernando Menezes Jr. from Pexels
+
 ## Introduction
 
-The Human Activity recognition dataset consists of information collected from embedded accelerometer and gyroscopes while performing tasks like WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING and LAYING.The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years, with video evidence so as to label the observations correctly. The measure ments result in a 561 feature vector.
+The Human Activity recognition dataset consists of information collected from embedded accelerometer and gyroscopes while performing tasks like WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING and LAYING.The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years, with video evidence so as to label the observations correctly. The measurements result in a 561 feature vector.This helps in creating a large number of 
 
 
 
@@ -42,9 +44,9 @@ One of the class outcomes is chosen as the pivot and the rest of the classes are
 
 
 ```r
-libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally','caret')
+libraries_needed = c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally','caret')
 lapply(libraries_needed ,require,character.only=TRUE)
-data_raw<- read.csv('train.csv')
+data_raw= read.csv('train.csv')
 ```
 ### Top Level Information
 
@@ -104,14 +106,14 @@ To run this test, we use each feature as the numerical vector and we will test t
 
 
 ```r
-list_of_variables <- data_raw %>% select(-rn,-activity) %>% names()
-p_values_variables <- data.frame(variable_names=as.character(),p_values=as.numeric())
+list_of_variables = data_raw %>% select(-rn,-activity) %>% names()
+p_values_variables = data.frame(variable_names=as.character(),p_values=as.numeric())
 for(variable_names in list_of_variables){
   
   
   
   ### Grand Mean
-  mean_grand <- data_raw %>% 
+  mean_grand = data_raw %>% 
     select_(variable_names) %>% 
     mutate_all(funs(mean(.,na.rm=T))) %>% 
     unique() %>% 
@@ -119,7 +121,7 @@ for(variable_names in list_of_variables){
   
   
   ### Data frame with Number of Observations within each class and mean of observations per class
-  mean_groups <- data_raw %>% 
+  mean_groups = data_raw %>% 
     select_(variable_names ,'activity') %>% 
     group_by(activity) %>%
     summarise_all(funs(mean(.,na.rm=T))) %>% 
@@ -128,12 +130,12 @@ for(variable_names in list_of_variables){
   
   
   ## Rename the variable_names column as num_var . This is the within group mean
-  mean_groups$num_var <- mean_groups[,variable_names]
-  mean_groups <- mean_groups %>% 
+  mean_groups$num_var = mean_groups[,variable_names]
+  mean_groups = mean_groups %>% 
     select(activity,num_var,n)
   
   ### Calculate The mean_sum_of_squares_between
-  mean_sum_of_squares_between <- mean_groups %>%
+  mean_sum_of_squares_between = mean_groups %>%
     mutate(between_components = n * ((num_var - mean_grand) ^ 2)) %>% mutate(mean_squared_between =
     sum(between_components) / (length(unique(
     mean_groups$activity
@@ -141,7 +143,7 @@ for(variable_names in list_of_variables){
     select(mean_squared_between) %>% unique() %>% pull()
   
   ### Within group variablility calculation
-  mean_sum_of_squares_within <- data_raw %>% 
+  mean_sum_of_squares_within = data_raw %>% 
     select_(variable_names ,'activity') %>%
     inner_join(mean_groups) %>%
     mutate(within_components= (num_var-UQ(rlang::sym(variable_names)))^2) %>%
@@ -149,16 +151,16 @@ for(variable_names in list_of_variables){
     select(mean_sum_of_squares) %>% unique() %>% pull()
   
     #### F Statistic which between variability/within variability
-    f_stat <- mean_sum_of_squares_between/mean_sum_of_squares_within
+    f_stat = mean_sum_of_squares_between/mean_sum_of_squares_within
     ## p - value using this F statistic
-    p_value <- pf(f_stat,(length(unique(
+    p_value = pf(f_stat,(length(unique(
     mean_groups$activity
     )) - 1),(nrow(data_raw)-length(unique(mean_groups$activity))),lower.tail = F)
     
     if(p_value<0.05){
       
-      p_value_df <- data.frame(variable_names=variable_names,p_values = p_value)
-      p_values_variables <- rbind(p_value_df,p_values_variables)
+      p_value_df = data.frame(variable_names=variable_names,p_values = p_value)
+      p_values_variables = rbind(p_value_df,p_values_variables)
       
     }
     
@@ -187,31 +189,31 @@ Before we feed the features into the logistic model, we need to make sure that t
 
 
 ```r
-columns_to_select <- p_values_variables %>%
+columns_to_select = p_values_variables %>%
   tidyr::spread(variable_names,p_values)
-columns_to_select <- names(columns_to_select)
+columns_to_select = names(columns_to_select)
 
-correlation_df <- data_raw %>% 
+correlation_df = data_raw %>% 
   select_(.dots=columns_to_select)
   
-correlation_df <- correlation_df %>%
+correlation_df = correlation_df %>%
   cor() %>%
   as.data.frame()
 
 
-correlation_df$row_names <- names(correlation_df)
+correlation_df$row_names = names(correlation_df)
 
-number_of_variables  <- data.frame(variable_name=as.character(),number_of_variables=as.numeric())
+number_of_variables  = data.frame(variable_name=as.character(),number_of_variables=as.numeric())
 for(col in names(correlation_df)[!grepl('row_names',names(correlation_df))]){
-  col <- as.character(col)
-  row_to_check <- correlation_df %>%
+  col = as.character(col)
+  row_to_check = correlation_df %>%
     select(UQ(rlang::sym(col)),row_names) %>%
     filter(abs(UQ(sym(col)))>0.5) %>% select(row_names) %>% filter(row_names!=col) %>% pull()
-  number_of_variables <- rbind(number_of_variables,data.frame(variable_name=col,number_of_variables=length(row_to_check)))
+  number_of_variables = rbind(number_of_variables,data.frame(variable_name=col,number_of_variables=length(row_to_check)))
     
   
 }
-variables_needed_for_modeling <- number_of_variables %>%
+variables_needed_for_modeling = number_of_variables %>%
   filter(number_of_variables==0) %>% select(variable_name) %>% pull()
 
 print(variables_needed_for_modeling)
@@ -247,7 +249,7 @@ Out of 555 variables, 28 variables are not correlated to any other variable in t
 
 
 ```r
-modeling_data <- data_raw %>%
+modeling_data = data_raw %>%
   select_(.dots=dput(as.character(variables_needed_for_modeling)),'activity')
 ```
 
@@ -285,16 +287,16 @@ We will then feed the variables into the multi nomial logistic regression functi
 
 ```r
 library(nnet)
-modeling_data$activity <- relevel(modeling_data$activity,ref='SITTING')
+modeling_data$activity = relevel(modeling_data$activity,ref='SITTING')
 
-model_logistic <- multinom(activity~.,data=modeling_data)
+model_logistic = multinom(activity~.,data=modeling_data)
 broom::tidy(model_logistic)
 
 
-test <- predict(model_logistic,data=modeling_data %>% select(-activity))
+test = predict(model_logistic,data=modeling_data %>% select(-activity))
 
 
-real_pred <- data.frame(real=modeling_data$activity,test=as.character(test))
+real_pred = data.frame(real=modeling_data$activity,test=as.character(test))
 caret::confusionMatrix(real_pred$real,real_pred$test)
 ```
 
@@ -320,19 +322,19 @@ The dataset is split into ten equal parts and in each iteration one part is used
 
 ## shuffle the data
 set.seed(42)
-scaleFUN <- function(x) sprintf("%.f", x)
+scaleFUN = function(x) sprintf("%.f", x)
 
-random_data <- dplyr::slice(modeling_data,sample(1:n()))
-test_idx <- round(seq(1,nrow(modeling_data),by=nrow(modeling_data)/11))
-accuracy_df <- data.frame(iteration= as.numeric(),accruacy_score= as.numeric())
+random_data = dplyr::slice(modeling_data,sample(1:n()))
+test_idx = round(seq(1,nrow(modeling_data),by=nrow(modeling_data)/11))
+accuracy_df = data.frame(iteration= as.numeric(),accruacy_score= as.numeric())
 for(i in 1:10){
   
-  test_data <- slice(random_data,test_idx[i]:test_idx[i+1])
-  train_data <- slice(random_data,-test_idx[i]:-test_idx[i+1])
-  model_cv <- multinom(activity~.,data=train_data)
-  predict_cv <- as.character(predict(model_cv,newdata=test_data %>% select(-activity)))
-  accuracy_score <- sum(as.character(predict_cv)==as.character(test_data$activity))/nrow(test_data)
-  accuracy_df <- rbind(accuracy_df,data.frame(iteration=i,accuracy_score=accuracy_score))
+  test_data = slice(random_data,test_idx[i]:test_idx[i+1])
+  train_data = slice(random_data,-test_idx[i]:-test_idx[i+1])
+  model_cv = multinom(activity~.,data=train_data)
+  predict_cv = as.character(predict(model_cv,newdata=test_data %>% select(-activity)))
+  accuracy_score = sum(as.character(predict_cv)==as.character(test_data$activity))/nrow(test_data)
+  accuracy_df = rbind(accuracy_df,data.frame(iteration=i,accuracy_score=accuracy_score))
   
   
 
@@ -500,9 +502,9 @@ The coefficients that we get with the multinom() function is the increase in rel
 
 
 ```r
-coeff_data <- broom::tidy(summary(model_logistic)$coefficients)
+coeff_data = broom::tidy(summary(model_logistic)$coefficients)
 
-coeff_data_long <- coeff_data %>%
+coeff_data_long = coeff_data %>%
   gather(variable,increase_in_log_odds,3:ncol(coeff_data)) 
 
 coeff_data_long %>%
@@ -598,6 +600,8 @@ coeff_data_long %>%
 
 * The model can be further improved by following the PCA feature extraction procedure. This method helps to create features that are a linear combination of the original features that explain the variability in the data.
 * Emsemble based models such as random forests can build model with high predictive power.
+
+Thanks for reading ! If you have any comments/feedback please feel free to reach out to me at padhokshaja@gmail.com . You can also reach out to me on [Twitter](https://twitter.com/PAdhokshaja)
 
 
 
