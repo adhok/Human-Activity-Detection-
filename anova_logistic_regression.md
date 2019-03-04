@@ -12,7 +12,7 @@ Cover Photo by Fernando Menezes Jr. from Pexels
 
 ## Introduction
 
-The Human Activity recognition dataset consists of information collected from embedded accelerometer and gyroscopes while performing tasks like WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING and LAYING.The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years, with video evidence so as to label the observations correctly. The measurements result in a 561 feature vector.This helps in creating a large number of 
+The Human Activity recognition dataset consists of information collected from embedded accelerometer and gyroscopes while performing tasks like WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING and LAYING.The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years, with video evidence so as to label the observations correctly. The measurements result in a 561 feature vector.The data set for the same can be found at [Kaggle](https://www.kaggle.com/mboaglio/simplifiedhuarus/kernels)
 
 
 
