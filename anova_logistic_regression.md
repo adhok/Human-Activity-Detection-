@@ -272,7 +272,7 @@ modeling_data %>%
   corrplot::corrplot(method = 'circle',tl.pos='n')
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+![plot of chunk unnamed-chunk-6](https://raw.githubusercontent.com/adhok/Human-Activity-Detection-/master/figure_anova_logistic/unnamed-chunk-6-1.png)
 
 
 
@@ -486,7 +486,7 @@ accuracy_df %>%
   geom_point()
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![plot of chunk unnamed-chunk-8](https://raw.githubusercontent.com/adhok/Human-Activity-Detection-/master/figure_anova_logistic/unnamed-chunk-8-1.png)
 
 
 
@@ -516,7 +516,7 @@ coeff_data_long %>%
   labs(x='Variable',y='Increase in Log Odds')
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+![plot of chunk unnamed-chunk-9](https://raw.githubusercontent.com/adhok/Human-Activity-Detection-/master/figure_anova_logistic/unnamed-chunk-9-1.png)
 
 The above plot is a visualization of the positive and negative coefficients of the model . Let's look at the positive and negative coefficients separately.
 
@@ -536,7 +536,7 @@ coeff_data_long %>%
   labs(x='Variable',y='Increase in Log Odds')
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
+![plot of chunk unnamed-chunk-10](https://raw.githubusercontent.com/adhok/Human-Activity-Detection-/master/figure_anova_logistic/unnamed-chunk-10-1.png)
 
 Key take aways
 * The variable `fBodyBodyGyroMag.maxInds` is essential to the characteristics of walking. A unit increase in this measure results in a significant increase in log odds of walking against sitting(baseline). 
@@ -561,7 +561,7 @@ coeff_data_long %>%
   labs(x='Variable',y='Increase in Log Odds')
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-11](https://raw.githubusercontent.com/adhok/Human-Activity-Detection-/master/figure_anova_logistic/unnamed-chunk-11-1.png)
 
 Key take aways
 * `fBodyBodyGyroJerkMag.maxInds` was established as a motion related variable in the previous section. This hypothesis is further confirmed by negative values for activities that are stationary.
@@ -592,8 +592,12 @@ coeff_data_long %>%
   labs(x='Variable',y='Increase in Log Odds')
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
+![plot of chunk unnamed-chunk-12](https://raw.githubusercontent.com/adhok/Human-Activity-Detection-/master/figure_anova_logistic/unnamed-chunk-12-1.png)
 
+## Future Work
+
+* The model can be further improved by following the PCA feature extraction procedure. This method helps to create features that are a linear combination of the original features that explain the variability in the data.
+* Emsemble based models such as random forests can build model with high predictive power.
 
 
 
