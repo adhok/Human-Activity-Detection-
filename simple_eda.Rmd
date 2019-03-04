@@ -16,7 +16,7 @@ The Human Activity recognition dataset consists of information collected from em
 
 ## Aim of this project
 
-The aim of this project to effectively predict the activities using the gievn measurements via multinomial logistic regression as the predicting algorithm.
+The aim of this project to effectively predict the activities using the given measurements via multinomial logistic regression as the predicting algorithm.
 
 
 
@@ -72,7 +72,7 @@ data_raw %>%
 ```
 
 * There are 6 activities in total. 
-* The frequencies of occurrences are not skewed much to a single activity.
+* The frequencies of occurrences are not too skewed to a single activity.
 
 
 ## Looking at the variables
@@ -270,19 +270,49 @@ The model above is trained on the entire dataset. One disadvantage of doing this
 
 ### Cross Validation
 
-The dataset is split into ten equal parts and in each iteration one part is used as the test data while the rest of the data is used as the training dataset.This entire process is repeated 10 times.
+The dataset is split into ten equal parts and in each iteration one part is used as the test data while the rest of the data is used as the training dataset.
+
+```{r}
+
+## Implementing cv from scratch
+
+## shuffle the data
+set.seed(42)
+scaleFUN <- function(x) sprintf("%.f", x)
+
+random_data <- dplyr::slice(modeling_data,sample(1:n()))
+test_idx <- round(seq(1,nrow(modeling_data),by=nrow(modeling_data)/11))
+accuracy_df <- data.frame(iteration= as.numeric(),accruacy_score= as.numeric())
+for(i in 1:10){
+  
+  test_data <- slice(random_data,test_idx[i]:test_idx[i+1])
+  train_data <- slice(random_data,-test_idx[i]:-test_idx[i+1])
+  model_cv <- multinom(activity~.,data=train_data)
+  predict_cv <- as.character(predict(model_cv,newdata=test_data %>% select(-activity)))
+  accuracy_score <- sum(as.character(predict_cv)==as.character(test_data$activity))/nrow(test_data)
+  accuracy_df <- rbind(accuracy_df,data.frame(iteration=i,accuracy_score=accuracy_score))
+  
+  
+
+  
+  
+  
+  
+  
+}
+
+accuracy_df %>%
+  ggplot(aes(x=iteration,y=accuracy_score))+
+  geom_line()+labs(x='Iteration Number',y='Accuracy Score',title='Accuracy Scores for each Iteration')+
+  scale_x_continuous(labels = scaleFUN)+
+  theme(plot.title = element_text(hjust=0.5))+
+  geom_point()
+  
+  
 
 
-```{r fig.height = 15,}
 
-train_control <- trainControl(method='repeatedcv',number=10,repeats = 10,verboseIter = TRUE)
 
-model_cv <- caret::train(activity~.,data=modeling_data,trControl=train_control,
-                  method='multinom')
-
-test_cv <- predict(model_cv,data=modeling_data %>% select(-activity))
-real_pred_cv <- data.frame(real=modeling_data$activity,test_cv=as.character(test_cv))
-caret::confusionMatrix(real_pred_cv$real,real_pred_cv$test_cv)
 
 ```
 
@@ -298,7 +328,7 @@ The coefficients that we get with the multinom() function is the increase in rel
 
 ```{r}
 
-coeff_data <- broom::tidy(summary(model_cv)$coefficients)
+coeff_data <- broom::tidy(summary(model_logistic)$coefficients)
 
 coeff_data_long <- coeff_data %>%
   gather(variable,increase_in_log_odds,3:ncol(coeff_data)) 
