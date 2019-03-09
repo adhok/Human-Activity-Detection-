@@ -90,65 +90,72 @@ To run this test, we use each feature as the numerical vector and we will test t
 
 ```{r message=FALSE}
 
-list_of_variables <- data_raw %>% select(-rn,-activity) %>% names()
-p_values_variables <- data.frame(variable_names=as.character(),p_values=as.numeric())
-for(variable_names in list_of_variables){
-  
-  
-  
-  ### Grand Mean
-  mean_grand <- data_raw %>% 
-    select_(variable_names) %>% 
-    mutate_all(funs(mean(.,na.rm=T))) %>% 
-    unique() %>% 
-    pull()
-  
-  
-  ### Data frame with Number of Observations within each class and mean of observations per class
-  mean_groups <- data_raw %>% 
-    select_(variable_names ,'activity') %>% 
-    group_by(activity) %>%
-    summarise_all(funs(mean(.,na.rm=T))) %>% 
-    inner_join(data_raw %>% select_(variable_names ,'activity') %>% group_by(activity) %>%
-    summarise(n=n())) %>% ungroup() %>% as.data.frame()
-  
-  
-  ## Rename the variable_names column as num_var . This is the within group mean
-  mean_groups$num_var <- mean_groups[,variable_names]
-  mean_groups <- mean_groups %>% 
-    select(activity,num_var,n)
-  
-  ### Calculate The mean_sum_of_squares_between
-  mean_sum_of_squares_between <- mean_groups %>%
-    mutate(between_components = n * ((num_var - mean_grand) ^ 2)) %>% mutate(mean_squared_between =
-    sum(between_components) / (length(unique(
-    mean_groups$activity
-    )) - 1)) %>%
-    select(mean_squared_between) %>% unique() %>% pull()
-  
-  ### Within group variablility calculation
-  mean_sum_of_squares_within <- data_raw %>% 
-    select_(variable_names ,'activity') %>%
-    inner_join(mean_groups) %>%
-    mutate(within_components= (num_var-UQ(rlang::sym(variable_names)))^2) %>%
-    mutate(mean_sum_of_squares= sum(within_components)/(nrow(data_raw)-length(unique(mean_groups$activity)))) %>%
-    select(mean_sum_of_squares) %>% unique() %>% pull()
-  
-    #### F Statistic which between variability/within variability
-    f_stat <- mean_sum_of_squares_between/mean_sum_of_squares_within
-    ## p - value using this F statistic
-    p_value <- pf(f_stat,(length(unique(
-    mean_groups$activity
-    )) - 1),(nrow(data_raw)-length(unique(mean_groups$activity))),lower.tail = F)
-    
-    if(p_value<0.05){
-      
-      p_value_df <- data.frame(variable_names=variable_names,p_values = p_value)
-      p_values_variables <- rbind(p_value_df,p_values_variables)
-      
-    }
-    
-    
+
+list_of_variables <- data_raw %>% select(-rn, -activity) %>% names()
+p_values_variables <-
+data.frame(variable_names = as.character(), p_values = as.numeric())
+for (variable_names in list_of_variables) {
+### Grand Mean
+mean_grand <- data_raw %>%
+select_(variable_names) %>%
+mutate_all(funs(mean(., na.rm = T))) %>%
+unique() %>%
+pull()
+
+
+### Data frame with Number of Observations within each class and mean of observations per class
+mean_groups <- data_raw %>%
+select_(variable_names , 'activity') %>%
+group_by(activity) %>%
+summarise_all(funs(mean(., na.rm = T))) %>%
+inner_join(
+data_raw %>% select_(variable_names , 'activity') %>% group_by(activity) %>%
+summarise(n = n())
+) %>% ungroup() %>% as.data.frame()
+
+
+## Rename the variable_names column as num_var . This is the within group mean
+mean_groups$num_var <- mean_groups[, variable_names]
+mean_groups <- mean_groups %>%
+select(activity, num_var, n)
+
+### Calculate The mean_sum_of_squares_between
+mean_sum_of_squares_between <- mean_groups %>%
+mutate(between_components = n * ((num_var - mean_grand) ^ 2)) %>% mutate(mean_squared_between =
+sum(between_components) / (length(unique(
+mean_groups$activity
+)) - 1)) %>%
+select(mean_squared_between) %>% unique() %>% pull()
+
+### Within group variablility calculation
+mean_sum_of_squares_within <- data_raw %>%
+select_(variable_names , 'activity') %>%
+inner_join(mean_groups) %>%
+mutate(within_components = (num_var - UQ(rlang::sym(variable_names))) ^
+2) %>%
+mutate(mean_sum_of_squares = sum(within_components) / (nrow(data_raw) -
+length(unique(
+mean_groups$activity
+)))) %>%
+select(mean_sum_of_squares) %>% unique() %>% pull()
+
+#### F Statistic which between variability/within variability
+f_stat <- mean_sum_of_squares_between / mean_sum_of_squares_within
+## p - value using this F statistic
+p_value <- pf(f_stat, (length(unique(
+mean_groups$activity
+)) - 1), (nrow(data_raw) - length(unique(
+mean_groups$activity
+))), lower.tail = F)
+
+if (p_value < 0.05) {
+p_value_df <-
+data.frame(variable_names = variable_names, p_values = p_value)
+p_values_variables <- rbind(p_value_df, p_values_variables)
+
+}
+
+
 }
 
 
@@ -229,6 +236,8 @@ modeling_data %>%
 
 
 ```
+
+
 
 
 
