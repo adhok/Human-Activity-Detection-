@@ -1,0 +1,105 @@
+---
+title: "Exploratory Data Analysis of Human Activity Recognition Data Set"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Motivation
+
+
+
+## PCA Algorithm function
+
+
+
+
+
+```{r}
+
+pca_function <- function(x,k){
+  
+  # x is the input data frame
+  ## Step 1 Normalize each column
+  
+  x_scaled <- scale(x)
+  ## Convert the data frame to a matrix
+  
+  x_mat <- as.matrix(x_scaled)
+  
+  ## Calculate the covariance matrix
+  
+  cov_x <- t(x_mat) %*% x_mat
+  
+  
+  ## Eigen Value decomposition
+  
+  decomp_eigen <- eigen(cov_x)
+  
+  eigen_values <- decomp_eigen$values
+  
+  eigen_vectors <- decomp_eigen$vectors
+
+  
+  # choose top k eigen values and explain the variance
+  
+  variance_explained <- sum(eigen_values[1:k])/sum(eigen_values)
+  
+  ## calculate the projected vectors
+  
+  
+  projected_vectors <- x_mat %*% eigen_vectors
+  projected_vectors <- projected_vectors[1:nrow(projected_vectors),1:k]
+  return(list(projected_vectors=projected_vectors,variance_explained=variance_explained))
+}
+
+
+
+
+```
+
+
+
+## Choosing the Best K
+
+
+```{r}
+
+## removing the redundant columns
+
+data_raw_pca <- data_raw %>% select(-rn,-activity)
+
+# possible values of K
+
+
+variance_data <- list()
+
+for(k in 1:ncol(data_raw_pca)){
+  
+  variance_temp <- pca_function(data_raw_pca,k)$variance_explained
+  dat <- data.frame(k=k,variance=variance_temp)
+  
+  variance_data[[k]] <- dat
+  
+  
+  
+  
+}
+
+
+final_data <- do.call(rbind,variance_data)
+
+
+
+
+
+
+
+```
