@@ -96,10 +96,53 @@ for(k in 1:ncol(data_raw_pca)){
 
 final_data <- do.call(rbind,variance_data)
 
+```
+
+
+
+```{r}
+
+
+final_data %>%
+  ggplot(aes(x=k,y=variance))+geom_line()
+
+
+final_data %>%
+  filter(variance<0.91) %>%
+  arrange(desc(variance)) %>%
+  head(1)
+
+
+```
 
 
 
 
+```{r}
+pca_final <- pca_function(data_raw_pca,68)
+
+
+data_pca <- as.data.frame(pca_final$projected_vectors)
+
+data_pca$activity <- data_raw$activity
+```
+
+
+
+
+```{r}
+
+library(nnet)
+data_pca$activity <- relevel(data_pca$activity,ref='SITTING')
+
+model_logistic <- multinom(activity~.,data=data_pca)
+broom::tidy(model_logistic)
+
+test <- predict(model_logistic,data=data_pca %>% select(-activity))
+
+
+real_pred <- data.frame(real=data_pca$activity,test=as.character(test))
+caret::confusionMatrix(real_pred$real,real_pred$test)
 
 
 ```
