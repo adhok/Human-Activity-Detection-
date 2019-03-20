@@ -14,9 +14,25 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Motivation
 
+The human activity data consists of 561 features. Using all of these features in a predictive modeling procedure can be computationally tedious. On the other hand, removing features can result in losing vital information that can describe the process that generated the dependent variables.
+
+Instead of feature removal, trying to derive a new and reduced set of features from the existing set, can infact help us reduce computational efforts while maintaining informational integrity. This process is called feature extraction, with PCA being one of them.
+
 
 
 ## PCA Algorithm function
+
+PCA is short for Principal Component Analysis. The original set of features are combined and linearly transformed into principal components. 
+The set of principal components that explain the data effectively ,is chosen as the new feature set. The PCA process can be explained briefly in the following steps.
+
+Let *X* be a matrix that represents the set of features that we are running PCA on. Each column in this matrix represents a feature.
+
+*  __Step 1__ : Subtract each column by its mean and divide it by the standard deviation.
+*  __Step 2__ : Let the new normalized matrix be *Z*
+
+
+
+
 
 
 
