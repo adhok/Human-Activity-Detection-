@@ -28,7 +28,7 @@ The set of principal components that explain the data effectively ,is chosen as 
 Let *X* be a matrix that represents the set of features that we are running PCA on. Each column in this matrix represents a feature.
 
 *  __Step 1__ : Subtract each column by its mean and divide it by the standard deviation.
-*  __Step 2__ : Let the new normalized matrix be *Z*
+*  __Step 2__ : Let the new normalized matrix be *Z* . Using this normalized matrix , calculate the covariance matrix ie Z<sup>T</sup>Z
 
 
 
