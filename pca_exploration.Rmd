@@ -28,7 +28,12 @@ The set of principal components that explain the data effectively ,is chosen as 
 Let *X* be a matrix that represents the set of features that we are running PCA on. Each column in this matrix represents a feature.
 
 *  __Step 1__ : Subtract each column by its mean and divide it by the standard deviation.
-*  __Step 2__ : Let the new normalized matrix be *Z* . Using this normalized matrix , calculate the covariance matrix ie Z<sup>T</sup>Z
+*  __Step 2__ : Let the new normalized matrix be *Z* . Using this normalized matrix , calculate the covariance matrix ie Z<sup>T</sup>Z . Let this covariance matrix be *C*
+*  __Step 3__ : Decompose the covariance matrix into eigen values and eigen vectors. Here the `eigen()` function is used. The eigen vector corresponding to the highest eigen value is the direction of maximum variance.
+
+*  __Step 4__ : To acquire the principal components, arrange the eigen values in descending order and reorder the eigen vectors accordingly. This reordering is taken care of by the `eigen()` function.
+
+*  __Step 5__ : Now that we have the directions along which the variance is maximum, we need to project them on the data that we have to create the features. This is achieved by multiplying the scaled feature matrix *Z* with the reordered eigen matrix. The explained variance of each component is the eigen value corresponding to that component divided by the sum of eigen values.
 
 
 
@@ -89,6 +94,10 @@ pca_function <- function(x,k){
 ```{r}
 
 ## removing the redundant columns
+
+libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally','caret')
+lapply(libraries_needed ,require,character.only=TRUE)
+data_raw<- read.csv('train.csv')
 
 data_raw_pca <- data_raw %>% select(-rn,-activity)
 
