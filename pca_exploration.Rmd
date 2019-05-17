@@ -36,10 +36,13 @@ Let *X* be a matrix that represents the set of features that we are running PCA 
 *  __Step 5__ : Now that we have the directions along which the variance is maximum, we need to project them on the data that we have to create the features. This is achieved by multiplying the scaled feature matrix *Z* with the reordered eigen matrix. The explained variance of each component is the eigen value corresponding to that component divided by the sum of eigen values.
 
 
+These steps are encapsulated via the `pca_function()` that is defined below. This function returns the following
 
+1. The projected vectors
 
+2. The explained variance of these projected vectors
 
-
+3. The directions along which the data is projected.
 
 
 
@@ -71,14 +74,14 @@ pca_function <- function(x,k){
   
   # choose top k eigen values and explain the variance
   
-  variance_explained <- sum(eigen_values[1:k])/sum(eigen_values)
+  eigen_values <- eigen_values[1:k]
   
   ## calculate the projected vectors
   
   
   projected_vectors <- x_mat %*% eigen_vectors
   projected_vectors <- projected_vectors[1:nrow(projected_vectors),1:k]
-  return(list(projected_vectors=projected_vectors,variance_explained=variance_explained))
+  return(list(projected_vectors=projected_vectors,eigen_values=eigen_values,basis_vectors=eigen_vectors))
 }
 
 
@@ -90,84 +93,132 @@ pca_function <- function(x,k){
 
 ## Choosing the Best K
 
+Its good to visualize the optimal number of principal components by looking how well they explain the data. Consecutive principal components explain lesser and lesser of the variance. 
+
 
 ```{r}
 
 ## removing the redundant columns
 
-libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','hrbrthemes','GGally','caret')
+libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','caret')
 lapply(libraries_needed ,require,character.only=TRUE)
-data_raw<- read.csv('train.csv')
+data_raw<- read.csv('train.csv',stringsAsFactors = FALSE)
+
 
 data_raw_pca <- data_raw %>% select(-rn,-activity)
 
-# possible values of K
 
 
-variance_data <- list()
 
-for(k in 1:ncol(data_raw_pca)){
+train_index <- sample(1:nrow(data_raw_pca),0.75*nrow(data_raw_pca))
+
+data_raw_pca_train <- data_raw_pca[train_index,]
+
+data_raw_pca_test <- data_raw_pca[-train_index,]
   
-  variance_temp <- pca_function(data_raw_pca,k)$variance_explained
-  dat <- data.frame(k=k,variance=variance_temp)
-  
-  variance_data[[k]] <- dat
-  
-  
-  
-  
-}
+pca_decomposed_data <- pca_function(data_raw_pca_train,561)
 
 
-final_data <- do.call(rbind,variance_data)
+
+
+  
 
 ```
 
 
 
 ```{r}
+## Convert to a data frame
+options(scipen = 999)
+
+eigen_values_and_vectors <- data.frame(principal_component = 1:ncol(data_raw_pca_train),eigen_values = pca_decomposed_data$eigen_values)
 
 
-final_data %>%
-  ggplot(aes(x=k,y=variance))+geom_line()
+eigen_values_and_vectors %>%
+  mutate(var = eigen_values/sum(eigen_values)) %>%
+  mutate(cumulative_var = cumsum(var))
 
 
-final_data %>%
-  filter(variance<0.91) %>%
-  arrange(desc(variance)) %>%
-  head(1)
+
+
+
+  
+
+
 
 
 ```
 
+
+The first 100 principal components explain about 95% of the variance in the data. Let's apply this transformation and choose the first 100 principal components. We will then use these principal components in our multinomial logistic regression model. 
 
 
 
 ```{r}
-pca_final <- pca_function(data_raw_pca,68)
+pca_final_train <- pca_function(data_raw_pca_train,100)
 
 
-data_pca <- as.data.frame(pca_final$projected_vectors)
+data_pca_train <- as.data.frame(pca_final_train$projected_vectors)
 
-data_pca$activity <- data_raw$activity
+data_pca_train$activity <- as.character(data_raw[train_index,]$activity)
 ```
 
 
+
+Multinomial logistic regression models help in deriving the log odds of an event happening against a base event. This is example, the base event is chosen as `SITTING`.
 
 
 ```{r}
 
 library(nnet)
-data_pca$activity <- relevel(data_pca$activity,ref='SITTING')
 
-model_logistic <- multinom(activity~.,data=data_pca)
-broom::tidy(model_logistic)
+data_pca_train$activity <- as.factor(data_pca_train$activity)
+data_pca_train$activity <- relevel(data_pca_train$activity,ref='SITTING')
 
-test <- predict(model_logistic,data=data_pca %>% select(-activity))
+model_logistic_pca <- multinom(activity~.,data=data_pca_train)
+#broom::tidy(model_logistic_pca)
+
+test <- predict(model_logistic_pca,newdata=data_pca_train %>% select(-activity))
 
 
-real_pred <- data.frame(real=data_pca$activity,test=as.character(test))
+real_pred <- data.frame(real=data_pca_train$activity,test=as.character(test))
 caret::confusionMatrix(real_pred$real,real_pred$test)
 
 
 ```
+
+* As per the output, the 98% of the data points were classified properly.
+* For the purpose of prediction we project the scaled test data onto the principal directions.
+* The resulting vectors are then used in the model and tested against the test data.
+
+
+## Testing 
+
+```{r}
+
+## testing
+
+data_pca_test <- as.matrix(scale(data_raw_pca_test)) %*% pca_final_train$basis_vectors
+
+data_pca_test <- as.data.frame(data_pca_test)
+
+data_pca_test <- data_pca_test[,1:50]
+
+data_pca_test$activity <- data_raw[-train_index,]$activity
+ 
+test_prediction <- predict(model_logistic_pca,newdata = data_pca_test %>% select(-activity))
+real_pred_test <- data.frame(real=data_pca_test$activity,test=as.character(test_prediction))
+
+
+caret::confusionMatrix(real_pred_test$real,real_pred_test$test)
+
+
+
+
+```
+
+* By using PCA to extract important features of the data has in fact helped in increasing the test accuracy.
+
+## 
+
+
