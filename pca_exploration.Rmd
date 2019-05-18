@@ -40,7 +40,7 @@ These steps are encapsulated via the `pca_function()` that is defined below. Thi
 
 1. The projected vectors
 
-2. The explained variance of these projected vectors
+2. The eigen values
 
 3. The directions along which the data is projected.
 
@@ -202,7 +202,7 @@ data_pca_test <- as.matrix(scale(data_raw_pca_test)) %*% pca_final_train$basis_v
 
 data_pca_test <- as.data.frame(data_pca_test)
 
-data_pca_test <- data_pca_test[,1:50]
+data_pca_test <- data_pca_test[,1:100]
 
 data_pca_test$activity <- data_raw[-train_index,]$activity
  
@@ -219,6 +219,6 @@ caret::confusionMatrix(real_pred_test$real,real_pred_test$test)
 
 * By using PCA to extract important features of the data has in fact helped in increasing the test accuracy.
 
-## 
+
 
 
