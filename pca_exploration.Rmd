@@ -100,6 +100,11 @@ Its good to visualize the optimal number of principal components by looking how 
 
 ## removing the redundant columns
 
+
+
+
+set.seed(42)
+
 libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','caret')
 lapply(libraries_needed ,require,character.only=TRUE)
 data_raw<- read.csv('train.csv',stringsAsFactors = FALSE)
@@ -217,7 +222,102 @@ caret::confusionMatrix(real_pred_test$real,real_pred_test$test)
 
 ```
 
-* By using PCA to extract important features of the data has in fact helped in increasing the test accuracy.
+* 94% of test data is correctly predicted.
+
+
+## 10 folds Cross validation of the approach
+
+
+Good training and test accuracies are achieved the previous sections with one set of test and train data. A good way to make sure that the predictive modeling approach is robust is to run it with different combinations of test and train data.
+
+```{r}
+random_data <- dplyr::slice(data_raw,sample(1:n()))
+test_idx <- round(seq(1,nrow(data_raw),by=nrow(data_raw)/11))
+accuracy_df <- data.frame(iteration= as.numeric(),training_score= as.numeric(),testing_score= as.numeric())
+for(i in 1:10){
+  
+  
+  ## Training
+  
+  test_data <- slice(random_data,test_idx[i]:test_idx[i+1])
+  train_data <- slice(random_data,-test_idx[i]:-test_idx[i+1])
+  pca_final_train <- pca_function(train_data %>% select(-rn,-activity),100)
+  
+  data_pca_train <- as.data.frame(pca_final_train$projected_vectors)
+  data_pca_train$activity <- as.character(train_data$activity)
+  #data_pca_train$activity <- relevel(data_pca_train$activity,ref='SITTING')
+
+  model_cv <- multinom(activity~.,data=data_pca_train)
+  
+  train_predict <- as.character(predict(model_cv,newdata=data_pca_train %>% select(-activity)))
+  
+  training_score <- sum(as.character(train_predict)==as.character(train_data$activity))/nrow(train_data)
+  
+  
+  
+  
+  
+  ## Testing 
+  data_pca_test <- as.matrix(scale(test_data %>% select(-rn,-activity))) %*% pca_final_train$basis_vectors
+
+  data_pca_test <- as.data.frame(data_pca_test)
+
+  data_pca_test <- data_pca_test[,1:100]
+
+  data_pca_test$activity <- test_data$activity
+  
+  
+  
+  predict_cv <- as.character(predict(model_cv,newdata=data_pca_test %>% select(-activity)))
+  testing_score <- sum(as.character(predict_cv)==as.character(test_data$activity))/nrow(test_data)
+  accuracy_df <- rbind(accuracy_df,data.frame(iteration=i,testing_score=testing_score,training_score =training_score ))
+  
+  
+
+  
+  
+  
+  
+  
+}
+
+
+
+
+
+
+
+```
+
+
+```{r}
+
+
+scaleFUN <- function(x) sprintf("%.f", x)
+
+accuracy_df %>%
+  tidyr::gather(type_of_score,value,2:3) %>%
+  mutate(type_of_score = ifelse(grepl('training',type_of_score),'Training Score','Testing Score')) %>%
+  ggplot(aes(x=iteration,y=value,color=type_of_score))+geom_line()+
+  scale_x_continuous(labels = scaleFUN)+
+  labs(x='Iteration Number',y='Score')
+
+
+
+```
+
+* Training scores are stable and testing scores range from 0.94 to 0.97 which is acceptable for a good multi class classifier.
+
+
+
+## Closing remarks
+
+* PCA allows for modeling in a smaller dimension without the loss of vital information. 
+* Running a multi class logistic model with PCA yields better testing and training results.
+
+
+
+
 
 
 
