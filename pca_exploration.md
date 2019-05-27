@@ -161,7 +161,7 @@ eigen_values_and_vectors %>%
   geom_line()+geom_point()
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
+![](https://raw.githubusercontent.com/adhok/Human-Activity-Detection-/master/figure/unnamed-chunk-3-1.png)
 
 
 The first 100 principal components explain about 95% of the variance in the data. Let's apply this transformation and choose the first 100 principal components. We will then use these principal components in our multinomial logistic regression model. 
@@ -594,8 +594,7 @@ accuracy_df %>%
   scale_x_continuous(labels = scaleFUN)+
   labs(x='Iteration Number',y='Score')
 ```
-
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![](https://raw.githubusercontent.com/adhok/Human-Activity-Detection-/master/figure/unnamed-chunk-8-1.png)
 
 * Training scores are stable and testing scores range from 0.94 to 0.97 which is acceptable for a good multi class classifier.
 
