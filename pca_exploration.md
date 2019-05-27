@@ -46,39 +46,39 @@ These steps are encapsulated via the `pca_function()` that is defined below. Thi
 
 
 ```r
-pca_function <- function(x,k){
+pca_function = function(x,k){
   
   # x is the input data frame
   ## Step 1 Normalize each column
   
-  x_scaled <- scale(x)
+  x_scaled = scale(x)
   ## Convert the data frame to a matrix
   
-  x_mat <- as.matrix(x_scaled)
+  x_mat = as.matrix(x_scaled)
   
   ## Calculate the covariance matrix
   
-  cov_x <- t(x_mat) %*% x_mat
+  cov_x = t(x_mat) %*% x_mat
   
   
   ## Eigen Value decomposition
   
-  decomp_eigen <- eigen(cov_x)
+  decomp_eigen = eigen(cov_x)
   
-  eigen_values <- decomp_eigen$values
+  eigen_values = decomp_eigen$values
   
-  eigen_vectors <- decomp_eigen$vectors
+  eigen_vectors = decomp_eigen$vectors
 
   
   # choose top k eigen values and explain the variance
   
-  eigen_values <- eigen_values[1:k]
+  eigen_values = eigen_values[1:k]
   
   ## calculate the projected vectors
   
   
-  projected_vectors <- x_mat %*% eigen_vectors
-  projected_vectors <- projected_vectors[1:nrow(projected_vectors),1:k]
+  projected_vectors = x_mat %*% eigen_vectors
+  projected_vectors = projected_vectors[1:nrow(projected_vectors),1:k]
   return(list(projected_vectors=projected_vectors,eigen_values=eigen_values,basis_vectors=eigen_vectors))
 }
 ```
@@ -99,7 +99,7 @@ Its good to visualize the optimal number of principal components by looking how 
 
 set.seed(42)
 
-libraries_needed <- c('tidyr','dplyr','ggplot2','caret','purrr','rlang','caret')
+libraries_needed = c('tidyr','dplyr','ggplot2','caret','purrr','rlang','caret')
 lapply(libraries_needed ,require,character.only=TRUE)
 ```
 
@@ -127,21 +127,21 @@ lapply(libraries_needed ,require,character.only=TRUE)
 ```
 
 ```r
-data_raw<- read.csv('train.csv',stringsAsFactors = FALSE)
+data_raw= read.csv('train.csv',stringsAsFactors = FALSE)
 
 
-data_raw_pca <- data_raw %>% select(-rn,-activity)
+data_raw_pca = data_raw %>% select(-rn,-activity)
 
 
 
 
-train_index <- sample(1:nrow(data_raw_pca),0.75*nrow(data_raw_pca))
+train_index = sample(1:nrow(data_raw_pca),0.75*nrow(data_raw_pca))
 
-data_raw_pca_train <- data_raw_pca[train_index,]
+data_raw_pca_train = data_raw_pca[train_index,]
 
-data_raw_pca_test <- data_raw_pca[-train_index,]
+data_raw_pca_test = data_raw_pca[-train_index,]
   
-pca_decomposed_data <- pca_function(data_raw_pca_train,561)
+pca_decomposed_data = pca_function(data_raw_pca_train,561)
 ```
 
 
@@ -151,7 +151,7 @@ pca_decomposed_data <- pca_function(data_raw_pca_train,561)
 ## Convert to a data frame
 options(scipen = 999)
 
-eigen_values_and_vectors <- data.frame(principal_component = 1:ncol(data_raw_pca_train),eigen_values = pca_decomposed_data$eigen_values)
+eigen_values_and_vectors = data.frame(principal_component = 1:ncol(data_raw_pca_train),eigen_values = pca_decomposed_data$eigen_values)
 
 
 eigen_values_and_vectors %>%
@@ -170,12 +170,12 @@ The first 100 principal components explain about 95% of the variance in the data
 
 
 ```r
-pca_final_train <- pca_function(data_raw_pca_train,100)
+pca_final_train = pca_function(data_raw_pca_train,100)
 
 
-data_pca_train <- as.data.frame(pca_final_train$projected_vectors)
+data_pca_train = as.data.frame(pca_final_train$projected_vectors)
 
-data_pca_train$activity <- as.character(data_raw[train_index,]$activity)
+data_pca_train$activity = as.character(data_raw[train_index,]$activity)
 ```
 
 
@@ -187,10 +187,10 @@ Multinomial logistic regression models help in deriving the log odds of an event
 ```r
 library(nnet)
 
-data_pca_train$activity <- as.factor(data_pca_train$activity)
-data_pca_train$activity <- relevel(data_pca_train$activity,ref='SITTING')
+data_pca_train$activity = as.factor(data_pca_train$activity)
+data_pca_train$activity = relevel(data_pca_train$activity,ref='SITTING')
 
-model_logistic_pca <- multinom(activity~.,data=data_pca_train)
+model_logistic_pca = multinom(activity~.,data=data_pca_train)
 ```
 
 ```
@@ -213,10 +213,10 @@ model_logistic_pca <- multinom(activity~.,data=data_pca_train)
 ```r
 #broom::tidy(model_logistic_pca)
 
-test <- predict(model_logistic_pca,newdata=data_pca_train %>% select(-activity))
+test = predict(model_logistic_pca,newdata=data_pca_train %>% select(-activity))
 
 
-real_pred <- data.frame(real=data_pca_train$activity,test=as.character(test))
+real_pred = data.frame(real=data_pca_train$activity,test=as.character(test))
 caret::confusionMatrix(real_pred$real,real_pred$test)
 ```
 
@@ -301,16 +301,16 @@ caret::confusionMatrix(real_pred$real,real_pred$test)
 ## testing
 
 ## Project scaled test data onto the directons of maximum variance (basis vectors)
-data_pca_test <- as.matrix(scale(data_raw_pca_test)) %*% pca_final_train$basis_vectors
+data_pca_test = as.matrix(scale(data_raw_pca_test)) %*% pca_final_train$basis_vectors
 
-data_pca_test <- as.data.frame(data_pca_test)
+data_pca_test = as.data.frame(data_pca_test)
 
-data_pca_test <- data_pca_test[,1:100]
+data_pca_test = data_pca_test[,1:100]
 
-data_pca_test$activity <- data_raw[-train_index,]$activity
+data_pca_test$activity = data_raw[-train_index,]$activity
  
-test_prediction <- predict(model_logistic_pca,newdata = data_pca_test %>% select(-activity))
-real_pred_test <- data.frame(real=data_pca_test$activity,test=as.character(test_prediction))
+test_prediction = predict(model_logistic_pca,newdata = data_pca_test %>% select(-activity))
+real_pred_test = data.frame(real=data_pca_test$activity,test=as.character(test_prediction))
 
 
 caret::confusionMatrix(real_pred_test$real,real_pred_test$test)
@@ -388,46 +388,46 @@ Good training and test accuracies are achieved in the previous sections with one
 
 
 ```r
-random_data <- dplyr::slice(data_raw,sample(1:n()))
-test_idx <- round(seq(1,nrow(data_raw),by=nrow(data_raw)/11))
-accuracy_df <- data.frame(iteration= as.numeric(),training_score= as.numeric(),testing_score= as.numeric())
+random_data = dplyr::slice(data_raw,sample(1:n()))
+test_idx = round(seq(1,nrow(data_raw),by=nrow(data_raw)/11))
+accuracy_df = data.frame(iteration= as.numeric(),training_score= as.numeric(),testing_score= as.numeric())
 for(i in 1:10){
   
   
   ## Training
   
-  test_data <- slice(random_data,test_idx[i]:test_idx[i+1])
-  train_data <- slice(random_data,-test_idx[i]:-test_idx[i+1])
-  pca_final_train <- pca_function(train_data %>% select(-rn,-activity),100)
+  test_data = slice(random_data,test_idx[i]:test_idx[i+1])
+  train_data = slice(random_data,-test_idx[i]:-test_idx[i+1])
+  pca_final_train = pca_function(train_data %>% select(-rn,-activity),100)
   
-  data_pca_train <- as.data.frame(pca_final_train$projected_vectors)
-  data_pca_train$activity <- as.character(train_data$activity)
-  #data_pca_train$activity <- relevel(data_pca_train$activity,ref='SITTING')
+  data_pca_train = as.data.frame(pca_final_train$projected_vectors)
+  data_pca_train$activity = as.character(train_data$activity)
+  #data_pca_train$activity = relevel(data_pca_train$activity,ref='SITTING')
 
-  model_cv <- multinom(activity~.,data=data_pca_train)
+  model_cv = multinom(activity~.,data=data_pca_train)
   
-  train_predict <- as.character(predict(model_cv,newdata=data_pca_train %>% select(-activity)))
+  train_predict = as.character(predict(model_cv,newdata=data_pca_train %>% select(-activity)))
   
-  training_score <- sum(as.character(train_predict)==as.character(train_data$activity))/nrow(train_data)
+  training_score = sum(as.character(train_predict)==as.character(train_data$activity))/nrow(train_data)
   
   
   
   
   
   ## Testing 
-  data_pca_test <- as.matrix(scale(test_data %>% select(-rn,-activity))) %*% pca_final_train$basis_vectors
+  data_pca_test = as.matrix(scale(test_data %>% select(-rn,-activity))) %*% pca_final_train$basis_vectors
 
-  data_pca_test <- as.data.frame(data_pca_test)
+  data_pca_test = as.data.frame(data_pca_test)
 
-  data_pca_test <- data_pca_test[,1:100]
+  data_pca_test = data_pca_test[,1:100]
 
-  data_pca_test$activity <- test_data$activity
+  data_pca_test$activity = test_data$activity
   
   
   
-  predict_cv <- as.character(predict(model_cv,newdata=data_pca_test %>% select(-activity)))
-  testing_score <- sum(as.character(predict_cv)==as.character(test_data$activity))/nrow(test_data)
-  accuracy_df <- rbind(accuracy_df,data.frame(iteration=i,testing_score=testing_score,training_score =training_score ))
+  predict_cv = as.character(predict(model_cv,newdata=data_pca_test %>% select(-activity)))
+  testing_score = sum(as.character(predict_cv)==as.character(test_data$activity))/nrow(test_data)
+  accuracy_df = rbind(accuracy_df,data.frame(iteration=i,testing_score=testing_score,training_score =training_score ))
   
   
 
@@ -585,7 +585,7 @@ for(i in 1:10){
 
 
 ```r
-scaleFUN <- function(x) sprintf("%.f", x)
+scaleFUN = function(x) sprintf("%.f", x)
 
 accuracy_df %>%
   tidyr::gather(type_of_score,value,2:3) %>%
