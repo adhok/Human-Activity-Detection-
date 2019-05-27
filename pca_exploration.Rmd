@@ -33,7 +33,7 @@ Let *X* be a matrix that represents the set of features that we are running PCA 
 
 *  __Step 4__ : To acquire the principal components, arrange the eigen values in descending order and reorder the eigen vectors accordingly. This reordering is taken care of by the `eigen()` function.
 
-*  __Step 5__ : Now that we have the directions along which the variance is maximum, we need to project them on the data that we have to create the features. This is achieved by multiplying the scaled feature matrix *Z* with the reordered eigen matrix. The explained variance of each component is the eigen value corresponding to that component divided by the sum of eigen values.
+*  __Step 5__ : Now that we have the directions along which the variance is maximum, we need to project them on the data that we have ,to create the features. This is achieved by multiplying the scaled feature matrix *Z* with the reordered eigen matrix. The explained variance of each component is the eigen value corresponding to that component divided by the sum of eigen values.
 
 
 These steps are encapsulated via the `pca_function()` that is defined below. This function returns the following
@@ -141,7 +141,9 @@ eigen_values_and_vectors <- data.frame(principal_component = 1:ncol(data_raw_pca
 
 eigen_values_and_vectors %>%
   mutate(var = eigen_values/sum(eigen_values)) %>%
-  mutate(cumulative_var = cumsum(var))
+  mutate(cumulative_var = cumsum(var)) %>%
+  ggplot(aes(x=principal_component,y=cumulative_var))+
+  geom_line()+geom_point()
 
 
 
@@ -193,8 +195,9 @@ caret::confusionMatrix(real_pred$real,real_pred$test)
 ```
 
 * As per the output, the 98% of the data points were classified properly.
-* For the purpose of prediction we project the scaled test data onto the principal directions.
-* The resulting vectors are then used in the model and tested against the test data.
+* For the purpose of prediction on the test data, we project the scaled test data onto the principal directions.
+* The resulting vectors are then used in the model to generate the predicted values.
+* These predicted values are then compared against the test values to evaluate the test accuracy,
 
 
 ## Testing 
@@ -203,6 +206,7 @@ caret::confusionMatrix(real_pred$real,real_pred$test)
 
 ## testing
 
+## Project scaled test data onto the directons of maximum variance (basis vectors)
 data_pca_test <- as.matrix(scale(data_raw_pca_test)) %*% pca_final_train$basis_vectors
 
 data_pca_test <- as.data.frame(data_pca_test)
@@ -228,7 +232,7 @@ caret::confusionMatrix(real_pred_test$real,real_pred_test$test)
 ## 10 folds Cross validation of the approach
 
 
-Good training and test accuracies are achieved the previous sections with one set of test and train data. A good way to make sure that the predictive modeling approach is robust is to run it with different combinations of test and train data.
+Good training and test accuracies are achieved in the previous sections with one set of test and train data. A good way to make sure that the predictive modeling approach is robust is to run it with different combinations of test and train data.
 
 ```{r}
 random_data <- dplyr::slice(data_raw,sample(1:n()))
