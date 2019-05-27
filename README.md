@@ -8,7 +8,7 @@ The link to the dataset can be found [here](https://www.kaggle.com/mboaglio/simp
 * After the variables are chosen , we further drop the variables that display high correlations with other variables. After that the multinom() function is used to build the model(Classification Accuracy:~68%).
 
 
-## Method 1 : Multinomial Logistic Regression Model with Principal Component Analysis
+## Method 2 : Multinomial Logistic Regression Model with Principal Component Analysis
 
 * Instead of dropping variables that could be essential to the explanation of the data, project the data along directions of maximaum variance.
 
