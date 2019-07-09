@@ -1,4 +1,4 @@
-# Human-Activity-Detection-
+# Human-Activity-Detection
 Script for Human Activity detection that is based on Kaggle's Human Activity Recognition Dataset
 The link to the dataset can be found [here](https://www.kaggle.com/mboaglio/simplifiedhuarus/kernels)
 
